@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class GerenciadorTabuleiro : MonoBehaviour
 {
@@ -16,7 +17,8 @@ public class GerenciadorTabuleiro : MonoBehaviour
     public TMP_Text textoTempo;
 
     private int quantidadeMovimentos = 0;
-    private float tempoRestante = 120f;
+    private float tempoRestante = 20f;
+    private bool jogoFinalizado = false;
 
     private void Awake()
     {
@@ -41,17 +43,24 @@ public class GerenciadorTabuleiro : MonoBehaviour
 
     private void Update()
     {
-        if (DadosJogo.contraOTempo)
+        if (!DadosJogo.contraOTempo || jogoFinalizado)
         {
-            tempoRestante -= Time.deltaTime;
-
-            if (tempoRestante < 0)
-            {
-                tempoRestante = 0;
-            }
-
-            AtualizarTextoTempo();
+            return;
         }
+
+        tempoRestante -= Time.deltaTime;
+
+        if (tempoRestante <= 0)
+        {
+            tempoRestante = 0;
+            AtualizarTextoTempo();
+
+            jogoFinalizado = true;
+            SceneManager.LoadScene("Derrota");
+            return;
+        }
+
+        AtualizarTextoTempo();
     }
 
     private void OrganizarPecas()
@@ -93,6 +102,11 @@ public class GerenciadorTabuleiro : MonoBehaviour
 
     public bool TentarMover(Peca peca)
     {
+        if (jogoFinalizado)
+        {
+            return false;
+        }
+
         int diferencaLinha = Mathf.Abs(peca.linha - linhaVazia);
         int diferencaColuna = Mathf.Abs(peca.coluna - colunaVazia);
 
@@ -116,10 +130,29 @@ public class GerenciadorTabuleiro : MonoBehaviour
             quantidadeMovimentos++;
             AtualizarTextoMovimentos();
 
+            VerificarVitoria();
+
             return true;
         }
 
         peca.transform.localPosition = CalcularPosicao(peca.linha, peca.coluna);
         return false;
+    }
+
+    private void VerificarVitoria()
+    {
+        for (int i = 0; i < pecas.Length; i++)
+        {
+            int linhaCorreta = i / 3;
+            int colunaCorreta = i % 3;
+
+            if (pecas[i].linha != linhaCorreta || pecas[i].coluna != colunaCorreta)
+            {
+                return;
+            }
+        }
+
+        jogoFinalizado = true;
+        SceneManager.LoadScene("Vitoria");
     }
 }
