@@ -3,15 +3,21 @@ using UnityEngine.SceneManagement;
 
 public class GerenciadorResultado : MonoBehaviour
 {
+    public void ReiniciarPartida()
+    {
+        SceneManager.LoadScene("Jogo");
+    }
+
     public void JogarNovamente()
     {
-        Debug.Log("Clicou em Jogar Novamente");
-        SceneManager.LoadScene("Jogo");
+        ReiniciarPartida();
     }
 
     public void VoltarMenu()
     {
-        Debug.Log("Clicou em Voltar Menu");
+        PlayerPrefs.DeleteKey("TempoDaPartida");
+        PlayerPrefs.Save();
+
         SceneManager.LoadScene("MenuInicial");
     }
 }
