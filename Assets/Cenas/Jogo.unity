@@ -1590,6 +1590,8 @@ MonoBehaviour:
   linhaVazia: 2
   colunaVazia: 2
   tamanhoCelula: 105
+  textoMovimentos: {fileID: 1400795334}
+  textoTempo: {fileID: 1846097011}
 --- !u!1001 &2082364909
 PrefabInstance:
   m_ObjectHideFlags: 0

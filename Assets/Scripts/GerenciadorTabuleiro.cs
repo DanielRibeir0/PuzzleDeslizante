@@ -13,7 +13,10 @@ public class GerenciadorTabuleiro : MonoBehaviour
     public float tamanhoCelula = 105f;
 
     public TMP_Text textoMovimentos;
+    public TMP_Text textoTempo;
+
     private int quantidadeMovimentos = 0;
+    private float tempoRestante = 120f;
 
     private void Awake()
     {
@@ -24,6 +27,31 @@ public class GerenciadorTabuleiro : MonoBehaviour
     {
         OrganizarPecas();
         AtualizarTextoMovimentos();
+
+        if (DadosJogo.contraOTempo)
+        {
+            textoTempo.gameObject.SetActive(true);
+            AtualizarTextoTempo();
+        }
+        else
+        {
+            textoTempo.gameObject.SetActive(false);
+        }
+    }
+
+    private void Update()
+    {
+        if (DadosJogo.contraOTempo)
+        {
+            tempoRestante -= Time.deltaTime;
+
+            if (tempoRestante < 0)
+            {
+                tempoRestante = 0;
+            }
+
+            AtualizarTextoTempo();
+        }
     }
 
     private void OrganizarPecas()
@@ -56,6 +84,11 @@ public class GerenciadorTabuleiro : MonoBehaviour
     private void AtualizarTextoMovimentos()
     {
         textoMovimentos.text = "Movimentos: " + quantidadeMovimentos;
+    }
+
+    private void AtualizarTextoTempo()
+    {
+        textoTempo.text = "Tempo: " + Mathf.CeilToInt(tempoRestante);
     }
 
     public bool TentarMover(Peca peca)

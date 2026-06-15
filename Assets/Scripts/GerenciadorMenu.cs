@@ -3,9 +3,15 @@ using UnityEngine.SceneManagement;
 
 public class GerenciadorMenu : MonoBehaviour
 {
-    // Carrega a cena principal do jogo
-    public void Jogar()
+    public void JogarCasual()
     {
+        DadosJogo.contraOTempo = false;
+        SceneManager.LoadScene("Jogo");
+    }
+
+    public void JogarContraOTempo()
+    {
+        DadosJogo.contraOTempo = true;
         SceneManager.LoadScene("Jogo");
     }
 }
