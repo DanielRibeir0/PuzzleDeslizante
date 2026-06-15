@@ -17,6 +17,9 @@ public class GerenciadorTabuleiro : MonoBehaviour
     // Distância entre as células do tabuleiro
     public float tamanhoCelula = 105f;
 
+    // Velocidade da animação das peças
+    public float velocidadeMovimento = 8f;
+
     public TMP_Text textoMovimentos;
     public TMP_Text textoTempo;
 
@@ -25,6 +28,7 @@ public class GerenciadorTabuleiro : MonoBehaviour
 
     private bool jogoFinalizado = false;
     private bool estaEmbaralhando = false;
+    private bool estaAnimando = false;
 
     private void Awake()
     {
@@ -111,8 +115,8 @@ public class GerenciadorTabuleiro : MonoBehaviour
             Peca pecaEscolhida =
                 pecasPossiveis[Random.Range(0, pecasPossiveis.Length)];
 
-            // Move sem contabilizar como jogada do jogador
-            MoverPecaSemContar(pecaEscolhida);
+            // Move sem animação e sem contabilizar como jogada do jogador
+            MoverPecaInstantaneamente(pecaEscolhida);
         }
 
         // Garante que o jogo nunca comece resolvido
@@ -130,7 +134,7 @@ public class GerenciadorTabuleiro : MonoBehaviour
         yield return null;
     }
 
-    private void MoverPecaSemContar(Peca peca)
+    private void MoverPecaInstantaneamente(Peca peca)
     {
         // Guarda a posição lógica atual da peça
         int linhaAntiga = peca.linha;
@@ -147,6 +151,25 @@ public class GerenciadorTabuleiro : MonoBehaviour
         // Atualiza a nova posição vazia
         linhaVazia = linhaAntiga;
         colunaVazia = colunaAntiga;
+    }
+
+    private IEnumerator AnimarMovimento(Peca peca, Vector3 destino)
+    {
+        estaAnimando = true;
+
+        while (Vector3.Distance(peca.transform.localPosition, destino) > 0.1f)
+        {
+            peca.transform.localPosition = Vector3.Lerp(
+                peca.transform.localPosition,
+                destino,
+                velocidadeMovimento * Time.deltaTime
+            );
+
+            yield return null;
+        }
+
+        peca.transform.localPosition = destino;
+        estaAnimando = false;
     }
 
     private bool EstaResolvido()
@@ -190,7 +213,7 @@ public class GerenciadorTabuleiro : MonoBehaviour
 
     public bool TentarMover(Peca peca)
     {
-        if (jogoFinalizado || estaEmbaralhando)
+        if (jogoFinalizado || estaEmbaralhando || estaAnimando)
         {
             return false;
         }
@@ -208,12 +231,22 @@ public class GerenciadorTabuleiro : MonoBehaviour
 
         if (estaAoLado)
         {
-            MoverPecaSemContar(peca);
+            int linhaAntiga = peca.linha;
+            int colunaAntiga = peca.coluna;
+
+            Vector3 destino = CalcularPosicao(linhaVazia, colunaVazia);
+
+            // Atualiza a posição lógica antes da animação
+            peca.linha = linhaVazia;
+            peca.coluna = colunaVazia;
+
+            linhaVazia = linhaAntiga;
+            colunaVazia = colunaAntiga;
 
             quantidadeMovimentos++;
             AtualizarTextoMovimentos();
 
-            VerificarVitoria();
+            StartCoroutine(MoverEVerificarVitoria(peca, destino));
 
             return true;
         }
@@ -222,6 +255,13 @@ public class GerenciadorTabuleiro : MonoBehaviour
             CalcularPosicao(peca.linha, peca.coluna);
 
         return false;
+    }
+
+    private IEnumerator MoverEVerificarVitoria(Peca peca, Vector3 destino)
+    {
+        yield return StartCoroutine(AnimarMovimento(peca, destino));
+
+        VerificarVitoria();
     }
 
     private void VerificarVitoria()
