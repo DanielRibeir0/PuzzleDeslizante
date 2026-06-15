@@ -30,6 +30,11 @@ public class GerenciadorTabuleiro : MonoBehaviour
     private bool estaEmbaralhando = false;
     private bool estaAnimando = false;
 
+    public AudioSource audioSource;
+    public AudioClip somMovimento;
+
+
+
     private void Awake()
     {
         instancia = this;
@@ -203,6 +208,13 @@ public class GerenciadorTabuleiro : MonoBehaviour
     {
         textoMovimentos.text =
             "Movimentos: " + quantidadeMovimentos;
+
+        if (audioSource != null &&
+            somMovimento != null &&
+            quantidadeMovimentos > 0)
+        {
+            audioSource.PlayOneShot(somMovimento, 1f);
+        }
     }
 
     private void AtualizarTextoTempo()
@@ -256,10 +268,11 @@ public class GerenciadorTabuleiro : MonoBehaviour
 
         return false;
     }
-
     private IEnumerator MoverEVerificarVitoria(Peca peca, Vector3 destino)
     {
         yield return StartCoroutine(AnimarMovimento(peca, destino));
+
+     
 
         VerificarVitoria();
     }
